@@ -38,7 +38,7 @@ class UserControllerTest {
         CreateUserRequest r = new CreateUserRequest();
         r.setUsername("test");
         r.setPassword("testPassword");
-        r.setConfirmPassord("testPassword");
+        r.setConfirmPassword("testPassword");
         ResponseEntity<User> response = userController.createUser(r);
         assertNotNull(response);
         assertEquals(HttpStatus.OK,response.getStatusCode());

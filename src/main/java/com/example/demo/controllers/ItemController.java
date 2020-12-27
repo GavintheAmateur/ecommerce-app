@@ -21,11 +21,7 @@ public class ItemController {
 		return ResponseEntity.ok(itemRepository.findAll());
 	}
 	
-	@PostMapping
-	public ResponseEntity<Item> createItem(@RequestBody Item item) {
-		Item item1 = itemRepository.save(item);
-		return ResponseEntity.ok(item1);
-	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<Item> getItemById(@PathVariable Long id) {
 		return ResponseEntity.of(itemRepository.findById(id));

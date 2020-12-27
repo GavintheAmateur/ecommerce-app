@@ -51,7 +51,7 @@ public class UserController {
 	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
 		//validate password
 		String password = createUserRequest.getPassword();
-		String confirmPassword = createUserRequest.getConfirmPassord();
+		String confirmPassword = createUserRequest.getConfirmPassword();
 		if(!password.equals(confirmPassword)) {
 			logger.error(String.format("password {} doesn't match confirmPassword {}",password,confirmPassword ));
 			return ResponseEntity.badRequest().build();
