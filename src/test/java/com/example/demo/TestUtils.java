@@ -13,7 +13,7 @@ public class TestUtils {
         Field f = null;
         try {
             f = target.getClass().getDeclaredField(fieldName);
-            if (!f.canAccess(target)) {
+            if (!f.isEnumConstant()) {
                 f.setAccessible(true);
                 wasPrivate = true;
             }
