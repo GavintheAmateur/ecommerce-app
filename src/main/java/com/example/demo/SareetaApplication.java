@@ -29,6 +29,7 @@ public class SareetaApplication {
 		SpringApplication.run(SareetaApplication.class, args);
 	}
 
+
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
