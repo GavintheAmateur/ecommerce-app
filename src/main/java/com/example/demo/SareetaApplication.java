@@ -30,6 +30,7 @@ public class SareetaApplication {
 	}
 
 
+
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
