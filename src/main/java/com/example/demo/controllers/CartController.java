@@ -19,6 +19,8 @@ import com.example.demo.model.persistence.repositories.ItemRepository;
 import com.example.demo.model.persistence.repositories.UserRepository;
 import com.example.demo.model.requests.ModifyCartRequest;
 
+import javax.transaction.Transactional;
+
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -45,6 +47,7 @@ public class CartController {
 		Cart cart = user.getCart();
 		IntStream.range(0, request.getQuantity())
 			.forEach(i -> cart.addItem(item.get()));
+		cart.setUser(user);
 		cartRepository.save(cart);
 		return ResponseEntity.ok(cart);
 	}

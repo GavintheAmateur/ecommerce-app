@@ -2,7 +2,10 @@ package com.example.demo.controllers;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +23,9 @@ import com.example.demo.model.persistence.repositories.UserRepository;
 @RestController
 @RequestMapping("/api/order")
 public class OrderController {
-	
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
 	@Autowired
 	private UserRepository userRepository;
 	
@@ -31,13 +35,23 @@ public class OrderController {
 	
 	@PostMapping("/submit/{username}")
 	public ResponseEntity<UserOrder> submit(@PathVariable String username) {
+
 		User user = userRepository.findByUsername(username);
 		if(user == null) {
+			logger.error("user not found for submit order request for username ", username);
 			return ResponseEntity.notFound().build();
 		}
 		UserOrder order = UserOrder.createFromCart(user.getCart());
-		orderRepository.save(order);
-		return ResponseEntity.ok(order);
+
+		try {
+			orderRepository.save(order);
+			logger.info("successfully saved order", order);
+			return ResponseEntity.ok(order);
+		} catch (Exception e) {
+			logger.info("failed to save order due to exception: ", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+
 	}
 	
 	@GetMapping("/history/{username}")

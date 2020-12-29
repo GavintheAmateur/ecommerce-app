@@ -1,7 +1,11 @@
 package com.example.demo.controllers;
 
+import java.text.MessageFormat;
 import java.util.Optional;
 
+import com.example.demo.exceptions.AppUserException;
+import com.example.demo.security.SecurityConstants;
+import org.omg.CORBA.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,8 @@ import com.example.demo.model.persistence.User;
 import com.example.demo.model.persistence.repositories.CartRepository;
 import com.example.demo.model.persistence.repositories.UserRepository;
 import com.example.demo.model.requests.CreateUserRequest;
+
+import static com.example.demo.security.SecurityConstants.MINIMUM_PASSWORD_LENGTH;
 
 @RestController
 @RequestMapping("/api/user")
@@ -48,30 +54,50 @@ public class UserController {
 	}
 	
 	@PostMapping("/create")
-	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
-		//validate password
-		String password = createUserRequest.getPassword();
-		String confirmPassword = createUserRequest.getConfirmPassword();
-		if(!password.equals(confirmPassword)) {
-			logger.error(String.format("password {} doesn't match confirmPassword {}",password,confirmPassword ));
-			return ResponseEntity.badRequest().build();
+	public ResponseEntity createUser(@RequestBody CreateUserRequest createUserRequest) {
+		//validate user
+		try {
+			validateCreateUserRequest(createUserRequest);
+		} catch (AppUserException e) {
+			logger.error(e.toString());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.toString());
 		}
 
-		if(password.length()<8) {
-			logger.error(String.format("password too short: {}",password ));
-			return ResponseEntity.badRequest().build();
-		}
-
-		//create and save user
+		//build user
 		User user = new User();
 		user.setUsername(createUserRequest.getUsername());
 		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
 		Cart cart = new Cart();
-		cartRepository.save(cart);
+//		Cart cart1 = cartRepository.save(cart);
 		user.setCart(cart);
-		userRepository.save(user);
+		//persist user
+		try {
+			User user1 = userRepository.save(user);
+			logger.info("managed to create user: ",user1.getUsername(),"with id",user1.getId());
+			return ResponseEntity.ok(user1);
+		} catch (Exception e) {
+			logger.error(e.toString());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 
-		return ResponseEntity.ok(user);
+
+
 	}
-	
+
+	private void validateCreateUserRequest(CreateUserRequest createUserRequest) throws AppUserException {
+
+		//validate password
+		String username =createUserRequest.getUsername();
+		String password = createUserRequest.getPassword();
+		String confirmPassword = createUserRequest.getConfirmPassword();
+		if(!password.equals(confirmPassword)) {
+			throw new AppUserException( username, "password doesn't meeet confirmPassword");
+		}
+
+		if(password.length()<MINIMUM_PASSWORD_LENGTH) {
+			String msg = String.format("password length %d is short of required length %d", password.length(),MINIMUM_PASSWORD_LENGTH);
+			throw new AppUserException( username, msg);
+		}
+	}
+
 }

@@ -27,14 +27,18 @@ class UserControllerTest {
     @BeforeEach
     public  void setUp() {
         userController = new UserController();
+        //bean setup
         TestUtils.injectObjects(userController,"userRepository",userRepo);
         TestUtils.injectObjects(userController,"cartRepository",cartRepo);
         TestUtils.injectObjects(userController,"bCryptPasswordEncoder",encoder);
+        //mock setup
+        when(encoder.encode("testPassword")).thenReturn("hashedTestPassword");
+
     }
 
     @Test
     void create_user_happy_path() {
-        when(encoder.encode("testPassword")).thenReturn("hashedTestPassword");
+       //create user
         CreateUserRequest r = new CreateUserRequest();
         r.setUsername("test");
         r.setPassword("testPassword");
@@ -46,15 +50,32 @@ class UserControllerTest {
         assertEquals(0,u.getId());
         assertEquals("test",u.getUsername());
         assertEquals("hashedTestPassword",u.getPassword());
+        //get user by id
+        ResponseEntity<User> ru1 = userController.findById(u.getId());
+        assertEquals(0,u.getId());
+        assertEquals("test",u.getUsername());
+        assertEquals("hashedTestPassword",u.getPassword());
+        // get user by name
+        ResponseEntity<User> ru2 = userController.findByUserName(u.getUsername());
+        assertEquals(0,u.getId());
+        assertEquals("test",u.getUsername());
+        assertEquals("hashedTestPassword",u.getPassword());
+
     }
 
     @Test
-    void findById() {
+    void create_user_sad_path() {
+        //create user
+        CreateUserRequest r = new CreateUserRequest();
+        r.setUsername("test");
+        r.setPassword("testPassword");
+        r.setConfirmPassword("wrongConfirmPassword");
+        ResponseEntity<User> response = userController.createUser(r);
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
+
     }
 
-    @Test
-    void findByUserName() {
-    }
 
 
 }

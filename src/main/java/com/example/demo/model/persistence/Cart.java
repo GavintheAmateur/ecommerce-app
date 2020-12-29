@@ -17,6 +17,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.FetchMode;
 
 @Entity
 @Table(name = "cart")
